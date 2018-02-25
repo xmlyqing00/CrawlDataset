@@ -1,8 +1,18 @@
 from PIL import Image
 import json
+import os
 
 
 def DownsampleImage(dataset_name, start_id=0):
+
+    if not os.path.exists('D:/ISIC/downsample/' + dataset_name):
+        os.mkdir('D:/ISIC/downsample/' + dataset_name)
+
+    if not os.path.exists('D:/ISIC/downsample/' + dataset_name + '/256/'):
+        os.mkdir('D:/ISIC/downsample/' + dataset_name + '/256/')
+
+    if not os.path.exists('D:/ISIC/downsample/' + dataset_name + '/100/'):
+        os.mkdir('D:/ISIC/downsample/' + dataset_name + '/100/')
 
     file = open('D:/ISIC/structure/' + dataset_name + '.json', 'r')
     image_list = json.load(file)
@@ -12,6 +22,9 @@ def DownsampleImage(dataset_name, start_id=0):
     dataset_path = 'D:/ISIC/data/' + dataset_name + '/'
     downsample_path = 'D:/ISIC/downsample/' + dataset_name + '/'
 
+    height_100 = 75
+    height_256 = 192
+
     while image_count < len(image_list):
 
         if image_count < start_id:
@@ -19,22 +32,34 @@ def DownsampleImage(dataset_name, start_id=0):
             continue
 
         image_info = image_list[image_count]
-        print(image_count, image_info['_id'])
         image_count += 1
-
-        img = Image.open(dataset_path + image_info['_id'] + '.jpg')
 
         try:
             diagnosis = image_info['meta']['clinical']['diagnosis']
         except KeyError:
+            diagnosis = None
+
+        try:
+            acquisition = image_info['meta']['acquisition']['image_type']
+        except KeyError:
+            acquisition = None
+
+        print(image_count, image_info['_id'], image_info['name'], diagnosis, acquisition)
+
+        if diagnosis is None or diagnosis not in ['melanoma', 'nevus', 'seborrheic keratosis']:
+            print('Diagnosis is not in the preset set.')
             continue
 
-        if diagnosis not in ['melanoma', 'nevus', 'seborrheic keratosis']:
+        if acquisition is None or acquisition != 'dermoscopic':
+            print('Acquisition is not dermoscopic.')
             continue
+
+        img0 = Image.open(dataset_path + image_info['_id'] + '.jpg')
 
         file = open(downsample_path + '256/' + image_info['_id'] + '.txt', 'w')
         file.write(diagnosis + '\n')
 
+        img = img0.resize(size=(256, height_256), resample=Image.BICUBIC)
         pixels_mat = img.load()
         for x in range(img.size[0]):
             for y in range(img.size[1]):
@@ -47,9 +72,7 @@ def DownsampleImage(dataset_name, start_id=0):
         file = open(downsample_path + '100/' + image_info['_id'] + '.txt', 'w')
         file.write(diagnosis + '\n')
 
-        new_width = 100
-        new_height = round(img.size[1] * 1.0 * new_width / img.size[0])
-        img = img.resize(size=(new_width, new_height), resample=Image.BICUBIC)
+        img = img0.resize(size=(100, height_100), resample=Image.BICUBIC)
         pixels_mat = img.load()
         for x in range(img.size[0]):
             for y in range(img.size[1]):
@@ -61,8 +84,20 @@ def DownsampleImage(dataset_name, start_id=0):
 
 
 if __name__ == '__main__':
-    dataset_name = 'MSK-2'
+    dataset_attr = [
+        {'name': 'MSK-1'},
+        {'name': 'MSK-2'},
+        {'name': 'MSK-3'},
+        {'name': 'MSK-4'},
+        {'name': 'MSK-5'},
+        {'name': 'SONIC'},
+        {'name': 'UDA-1'},
+        {'name': 'UDA-2'}
+    ]
 
-    print('Downsample Images.', dataset_name)
-    DownsampleImage(dataset_name=dataset_name)
+    for i in range(0, len(dataset_attr)):
+
+        print('Downsample Images.', dataset_attr[i]['name'])
+        DownsampleImage(dataset_name=dataset_attr[i]['name'])
+
     print('Finished.')
