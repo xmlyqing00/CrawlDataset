@@ -146,8 +146,7 @@ class FarsonDownloader:
         print(self.img_urls, self.img_ids)
 
         for i in range(len(self.loc_names)):
-            t = Timer(self.interval, self.fetch_img, [i])
-            t.start()
+            self.fetch_img(i)
     
 
 if __name__ == '__main__':
