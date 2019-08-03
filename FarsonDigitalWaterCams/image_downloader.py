@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from threading import Timer
 
 
-class FarsonDownloader:
+class ImageDownloader:
 
     def __init__(self, loc_names, dataset_folder, img_n, time_st, interval=10):
         
@@ -38,7 +38,7 @@ class FarsonDownloader:
         print('\t At local time:', time_st_local)
 
         print('Fetch images in the following %d locations in the UK:' % (len(loc_names)))
-        print('\t', loc_names)
+        print('\t', self.loc_names)
         print('')
 
         if not os.path.exists(dataset_folder):
@@ -58,7 +58,7 @@ class FarsonDownloader:
         print('')
 
     def __del__(self):
-        print('FarsonDownloader ends.')
+        print('Farson Image Downloader ends.')
 
     def prepare_img_urls(self):
 
@@ -121,7 +121,7 @@ class FarsonDownloader:
             time_local = datetime.fromtimestamp(self.img_ids[loc_id])
             time_london = self.tz_local.localize(time_local).astimezone(self.tz_london)
 
-            print('Fetch %s, left: %d.' % (loc_names[loc_id], self.img_lefts[loc_id]), '\tLondon time:', time_london)
+            print('Fetch %s, left: %d.' % (self.loc_names[loc_id], self.img_lefts[loc_id]), '\tLondon time:', time_london)
 
             req = request.Request(img_url, headers=headers, method='GET')
             try:
@@ -149,15 +149,3 @@ class FarsonDownloader:
             self.fetch_img(i)
     
 
-if __name__ == '__main__':
-
-    loc_names = ['auldgirth', 'bewdley', 'cockermouth', 'evesham-lock', 'aberlour', 'keswick_greta', 'holmrook', 'worcester', 'galway-city', 'dublin']
-    dataset_folder = '/Ship01/Dataset/water/FarsonWater'
-    img_n = 200
-    time_st = datetime(2019, 8, 3, 8, 0, 0) # London time
-    interval = 180
-
-    downloader = FarsonDownloader(loc_names, dataset_folder, img_n, time_st, interval)
-    downloader.batch_fetch_imgs()
-
-    
