@@ -37,14 +37,10 @@ def process(imageurl, folder, name):
         filepath = os.path.join(folder + '/' + name + '/' + imageName)
 
         res, img = cap.read()
-        cv2.imwrite(filepath, img)
-        # image = open(filepath, 'wb')
-        # image.write(data)
-        # image.close()
+        cap.release()
+        assert res
         
         # add timestamp to images
-        font = ImageFont.truetype('Roboto-Regular.ttf', 28)
-        img = cv2.imread(filepath)
         height, width, c = img.shape
         pos = (50, height-50)
         cv2_im_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -53,11 +49,11 @@ def process(imageurl, folder, name):
         draw.text(pos, imageName[:-4] + ' ' + timezone, font = font)
         cv2_im_processed = cv2.cvtColor(np.array(pil_im), cv2.COLOR_RGB2BGR)
         cv2.imwrite(filepath, cv2_im_processed)
-        cap.release()
+        
         return imageName
 
     except Exception as ex_results:
-        print ('Error: ', ex_results)
+        print('Error: ', ex_results)
 
         
 
@@ -66,6 +62,7 @@ if __name__ == '__main__':
     interval = 1
     totalTime = 180
     timezone = 'America/New_York'
+    font = ImageFont.truetype('Roboto-Regular.ttf', 28)
     base_headers = {
         # 'Connection': 'keep-alive',
         # 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
@@ -77,7 +74,7 @@ if __name__ == '__main__':
 
     c2 = {
         'url': 'http://108.49.186.56/axis-cgi/mjpg/video.cgi?resolution=1024x768&dummy=1510881269401',
-        'name': 'Boston_Tea_Party_Museum_Webcam_2_202006'
+        'name': 'Boston_Tea_Party_Museum_Webcam_2_202007'
     }
         
     if not os.path.exists(os.path.join(rootfolder, c2['name'])):
